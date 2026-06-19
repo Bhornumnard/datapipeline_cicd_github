@@ -28,6 +28,7 @@ def print_date():
     ref: https://www.w3schools.com/python/python_datetime.asp
     """
     # TODO: print เวลาปัจจุบัน
+    print("== Start of Exercise 2 ʕ•́ᴥ•̀ʔっ♡ ==")
     print(datetime.datetime.now())
 
 
