@@ -18,6 +18,7 @@ def print_hello():
     Print Hello World!
     """
     print("Hello World!")
+    print("== End of Exercise 1 ʕ•́ᴥ•̀ʔっ♡ ==")
     
 
 @task()
