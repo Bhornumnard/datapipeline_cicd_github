@@ -21,10 +21,10 @@ on:
 permissions:
   contents: read
   id-token: write   # required for Workload Identity Federation
-
 jobs:
   validate-and-deploy:
     runs-on: ubuntu-latest
+    environment: DAGS_CICD 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
