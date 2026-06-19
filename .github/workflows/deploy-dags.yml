@@ -21,10 +21,11 @@ on:
 permissions:
   contents: read
   id-token: write   # required for Workload Identity Federation
+
 jobs:
   validate-and-deploy:
     runs-on: ubuntu-latest
-    environment: DAGS_CICD 
+    environment: DAGS_CICD   # ต้องตรงกับชื่อ Environment ที่เก็บ secrets ไว้
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,6 +39,14 @@ jobs:
         run: |
           python -m py_compile dags/*.py
           echo "DAG files compiled successfully."
+
+      - name: Debug secrets (temporary - remove after fixing)
+        run: |
+          echo "WIF_PROVIDER length: ${#WIF_PROVIDER}"
+          echo "GCP_SA_EMAIL length: ${#GCP_SA_EMAIL}"
+        env:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          GCP_SA_EMAIL: ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Authenticate to Google Cloud
         id: auth
