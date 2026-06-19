@@ -40,13 +40,8 @@ jobs:
           python -m py_compile dags/*.py
           echo "DAG files compiled successfully."
 
-      - name: Debug secrets (temporary - remove after fixing)
-        run: |
-          echo "WIF_PROVIDER length: ${#WIF_PROVIDER}"
-          echo "GCP_SA_EMAIL length: ${#GCP_SA_EMAIL}"
-        env:
-          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
-          GCP_SA_EMAIL: ${{ secrets.GCP_SA_EMAIL }}
+      - name: Remove local __pycache__ before sync
+        run: find ./dags -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 
       - name: Authenticate to Google Cloud
         id: auth
@@ -60,12 +55,13 @@ jobs:
 
       - name: Sync DAGs to bucket
         run: |
-          gcloud storage rsync ./dags "gs://${{ secrets.DAGS_BUCKET }}/dags" \
+          gcloud storage rsync ./dags "gs://${{ secrets.DAGS_BUCKET }}" \
             --recursive \
-            --delete-unmatched-destination-objects
+            --delete-unmatched-destination-objects \
+            --exclude=".*__pycache__.*"
 
       - name: Show uploaded files
-        run: gcloud storage ls "gs://${{ secrets.DAGS_BUCKET }}/dags"
+        run: gcloud storage ls "gs://${{ secrets.DAGS_BUCKET }}"
 
 # --- Alternative auth block if you use a JSON key instead of WIF ---
 # Replace the "Authenticate to Google Cloud" step above with:
