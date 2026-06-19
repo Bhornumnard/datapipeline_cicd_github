@@ -53,11 +53,19 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
 
+      # NOTE: --checksums-only is required here. actions/checkout@v4 does a fresh
+      # clone every run, so every file gets a brand-new mtime (checkout time),
+      # not the original commit time. By default, gcloud storage rsync compares
+      # files using size + mtime, so it would see ALL files as "changed" every
+      # single run (even ones you didn't touch) and re-upload everything.
+      # --checksums-only forces rsync to compare actual file content hashes
+      # instead, so only the files you really edited get uploaded.
       - name: Sync DAGs to bucket
         run: |
           gcloud storage rsync ./dags "gs://${{ secrets.DAGS_BUCKET }}" \
             --recursive \
             --delete-unmatched-destination-objects \
+            --checksums-only \
             --exclude=".*__pycache__.*"
 
       - name: Show uploaded files
