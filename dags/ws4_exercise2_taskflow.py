@@ -36,6 +36,8 @@ def exercise2_taskflow_dag():
     # ใน exercise นี้จะได้รู้จักกับการแยก pipeline ออกเพื่อให้ทำงานแบบ parallel พร้อมกันได้
     # ซึ่ง TaskFlow แบบใหม่ ก็สามารถใช้งานร่วมกับการเขียน Operator แบบเดิมได้เหมือนกัน
 
+    # TODO: สร้าง task จาก BashOperator ด้านล่าง
+    # ใช้งาน gsutil ls เพื่อดูไฟล์ใน bucket
     t3 = BashOperator(
         task_id='gsutil_ls',
         bash_command='gsutil ls',
