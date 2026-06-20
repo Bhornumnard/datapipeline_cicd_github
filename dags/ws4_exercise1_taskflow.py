@@ -17,6 +17,7 @@ def print_hello():
     """
     Print Hello World!
     """
+    print("== Start of Exercise 1 ʕ•́ᴥ•̀ʔっ♡ ==")
     print("Hello World!")
     print("== End of Exercise 1 ʕ•́ᴥ•̀ʔっ♡ ==")
     
