@@ -30,6 +30,7 @@ def print_date():
     # TODO: print เวลาปัจจุบัน
     print("== Start of Exercise 2 ʕ•́ᴥ•̀ʔっ♡ ==")
     print(datetime.datetime.now())
+    print("== End of Exercise 2 ʕ•́ᴥ•̀ʔっ♡ ==")
 
 
 @dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=['exercise'])
