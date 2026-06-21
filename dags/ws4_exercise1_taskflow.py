@@ -1,7 +1,7 @@
 import datetime
 
 from airflow.decorators import dag, task
-from airflow.utils.dates import days_ago
+import pendulum
 
 default_args = {
     'owner': 'datath',
@@ -34,7 +34,7 @@ def print_date():
     print("== End of Exercise 2 ʕ•́ᴥ•̀ʔっ♡ ==")
 
 
-@dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=['exercise'])
+@dag(default_args=default_args, schedule_interval="@once", start_date=pendulum.today("UTC").subtract(days=1), tags=['exercise'])
 def exercise1_taskflow_dag():
 
     t1 = print_hello()
