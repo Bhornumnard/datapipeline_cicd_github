@@ -1,7 +1,6 @@
-from airflow.models import DAG
-from airflow.decorators import dag, task
+from airflow.sdk import dag, task
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-from airflow.utils.dates import days_ago
+import pendulum
 import pandas as pd
 import requests
 
@@ -83,7 +82,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
 
 
 # TODO: สร้าง dag
-@dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=['workshop'])
+@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1),catchup=False, tags=['workshop'])
 def workshop4_pipeline():
     """
     # Exercise4: Final DAG
