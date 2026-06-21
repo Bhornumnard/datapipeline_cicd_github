@@ -62,14 +62,14 @@ jobs:
       # instead, so only the files you really edited get uploaded.
       - name: Sync DAGs to bucket
         run: |
-          gcloud storage rsync ./dags "gs://${{ secrets.DAGS_BUCKET }}" \
+          gcloud storage rsync ./dags "gs://${{ secrets.DAGS_BUCKET }}/dags" \
             --recursive \
             --delete-unmatched-destination-objects \
             --checksums-only \
             --exclude=".*__pycache__.*"
 
       - name: Show uploaded files
-        run: gcloud storage ls "gs://${{ secrets.DAGS_BUCKET }}"
+        run: gcloud storage ls "gs://${{ secrets.DAGS_BUCKET }}/dags"
 
 # --- Alternative auth block if you use a JSON key instead of WIF ---
 # Replace the "Authenticate to Google Cloud" step above with:
