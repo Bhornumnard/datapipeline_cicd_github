@@ -1,8 +1,8 @@
 import datetime
 
-from airflow.decorators import dag, task
-from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
+from airflow.sdk import dag, task
+from airflow.providers.standard.operators.bash import BashOperator
+import pendulum
 
 default_args = {
     'owner': 'datath',
@@ -26,7 +26,7 @@ def print_date():
     print(datetime.datetime.now())
 
 
-@dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=['exercise'])
+@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1), tags=['exercise'])
 def exercise2_taskflow_dag():
 
     t1 = print_hello()
