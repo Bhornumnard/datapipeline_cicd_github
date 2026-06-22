@@ -1,0 +1,79 @@
+# Local Airflow matching Google Cloud Composer 3 / Airflow 3.1.7-build.10
+#
+# Prerequisites (one-time):
+#   1. Docker Desktop running
+#   2. Authenticate to pull the Composer image:
+#        gcloud auth login
+#        gcloud auth application-default login
+#        gcloud auth configure-docker us-docker.pkg.dev
+#
+# Usage:
+#   docker compose up
+#
+# UI: http://localhost:8080
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./docker/airflow/postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-25432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  airflow:
+    image: us-docker.pkg.dev/cloud-airflow-releaser/airflow-worker-scheduler-3-1-7/airflow-worker-scheduler-3-1-7:composer-3-airflow-3.1.7-build.10
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${AIRFLOW_PORT:-8080}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    mem_limit: 4g
+    cpus: 2
+    working_dir: /home/airflow
+    entrypoint: ["bash", "/home/airflow/entrypoint.sh"]
+    volumes:
+      - ./dags:/home/airflow/gcs/dags
+      - ./docker/airflow/plugins:/home/airflow/gcs/plugins
+      - ./docker/airflow/data:/home/airflow/gcs/data
+      - ./docker/airflow/requirements.txt:/home/airflow/composer_requirements.txt:ro
+      - ./docker/airflow/entrypoint.sh:/home/airflow/entrypoint.sh:ro
+      - ./docker/airflow/run_as_user.sh:/home/airflow/run_as_user.sh:ro
+      - ${GCLOUD_CONFIG_PATH:-${HOME}/.config/gcloud}:/home/airflow/.config/gcloud:ro
+    environment:
+      AIRFLOW_HOME: /home/airflow/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: /home/airflow/gcs/dags
+      AIRFLOW__CORE__DATA_FOLDER: /home/airflow/gcs/data
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__PLUGINS_FOLDER: /home/airflow/gcs/plugins
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:airflow@postgres:5432/airflow
+      AIRFLOW__API__EXPOSE_CONFIG: "True"
+      AIRFLOW__API_AUTH__JWT_ISSUER: test-jwt-issuer
+      AIRFLOW__COMPOSER_INTERNAL__ENABLE_TRIGGERER: "True"
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "True"
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://localhost:8081/execution/
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: "10"
+      AIRFLOW__DAG_PROCESSOR__PARSING_PRE_IMPORT_MODULES: "False"
+      COMPOSER_LOCAL_DEV: "True"
+      COMPOSER_IMAGE_VERSION: composer-3-airflow-3.1.7-build.10
+      COMPOSER_PYTHON_VERSION: "3"
+      COMPOSER_CONTAINER_RUN_AS_HOST_USER: "False"
+      COMPOSER_ENVIRONMENT: local-dev
+      COMPOSER_LOCATION: us-central1
+      DAGS_FOLDER: /home/airflow/gcs/dags
+      GCP_PROJECT: ${GCP_PROJECT_ID:-local-dev}
+      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID:-local-dev}
+      AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: google-cloud-platform://?extra__google_cloud_platform__project=${GCP_PROJECT_ID:-local-dev}&extra__google_cloud_platform__scope=https://www.googleapis.com/auth/cloud-platform

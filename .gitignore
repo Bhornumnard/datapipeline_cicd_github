@@ -123,6 +123,8 @@ celerybeat.pid
 
 # Environments
 .env
+docker/airflow/postgresql_data/
+.tools/
 .venv
 env/
 venv/
