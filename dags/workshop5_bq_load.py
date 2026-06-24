@@ -80,7 +80,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     print("== End of Workshop 4 ʕ•́ᴥ•̀ʔっ♡ ==")
 
 
-@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1), tags=["workshop"])
+@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1), catchup=False, tags=["workshop"])
 def workshop5_bash():
     """
     # Workshop 5
@@ -98,8 +98,11 @@ def workshop5_bash():
     # TODO: สร้าง t4 ที่เป็น BashOperator เพื่อใช้งานกับ BigQuery และใส่ dependencies
     t4 = BashOperator(
         task_id="bq_load",
-        bash_command="bq load --source_format=PARQUET 'project-83574f1e-8a28-49d8-9ae.work_shop_r2de.workshop4_output_airflow' final_output_path",
-        dag=dag
+        bash_command=(
+            f"bq load --source_format=PARQUET "
+            f"'project-83574f1e-8a28-49d8-9ae.work_shop_r2de.workshop4_output_airflow' "
+            f"{final_output_path}"
+        ),
     )
 
     [t1, t2] >> t3 >> t4
