@@ -18,6 +18,20 @@ default_args = {
     'owner': 'datath',
 }
 
+WORKSHOP5_BQ_SCHEMA = [
+    {"name": "transaction_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "date", "type": "DATE", "mode": "NULLABLE"},
+    {"name": "product_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "price", "type": "FLOAT", "mode": "NULLABLE"},
+    {"name": "quantity", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "customer_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "product_name", "type": "STRING", "mode": "NULLABLE"},
+    {"name": "customer_country", "type": "STRING", "mode": "NULLABLE"},
+    {"name": "customer_name", "type": "STRING", "mode": "NULLABLE"},
+    {"name": "total_amount", "type": "FLOAT", "mode": "NULLABLE"},
+    {"name": "thb_amount", "type": "FLOAT", "mode": "NULLABLE"},
+]
+
 
 @task()
 def get_data_from_mysql(output_path):
@@ -62,7 +76,8 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
 
     # merge 2 DataFrame
     final_df = transaction.merge(conversion_rate, how="left", left_on="Date", right_on="date")
-    
+    final_df["Date"] = pd.to_datetime(final_df["Date"])
+
     # แปลงราคา ให้เป็น total_amount และ thb_amount
     final_df["total_amount"] = final_df["Price"] * final_df["Quantity"]
     final_df["thb_amount"] = final_df["total_amount"] * final_df["gbp_thb"]
@@ -72,6 +87,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
 
     final_df.columns = ['transaction_id', 'date', 'product_id', 'price', 'quantity', 'customer_id',
         'product_name', 'customer_country', 'customer_name', 'total_amount','thb_amount']
+    final_df["date"] = pd.to_datetime(final_df["date"]).dt.date
 
     # save ไฟล์ Parquet
     final_df.to_parquet(output_path, index=False)
@@ -102,6 +118,8 @@ def workshop5():
         source_format="PARQUET",
         destination_project_dataset_table="project-83574f1e-8a28-49d8-9ae:work_shop_r2de.workshop5_gcs_to_bq",
         write_disposition="WRITE_TRUNCATE",
+        autodetect=False,
+        schema_fields=WORKSHOP5_BQ_SCHEMA,
     )
 
     [t1, t2] >> t3 >> t4

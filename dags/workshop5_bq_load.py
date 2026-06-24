@@ -63,7 +63,8 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
 
     # merge 2 DataFrame
     final_df = transaction.merge(conversion_rate, how="left", left_on="Date", right_on="date")
-    
+    final_df["Date"] = pd.to_datetime(final_df["Date"])
+
     # แปลงราคา ให้เป็น total_amount และ thb_amount
     final_df["total_amount"] = final_df["Price"] * final_df["Quantity"]
     final_df["thb_amount"] = final_df["total_amount"] * final_df["gbp_thb"]
@@ -73,6 +74,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
 
     final_df.columns = ['transaction_id', 'date', 'product_id', 'price', 'quantity', 'customer_id',
         'product_name', 'customer_country', 'customer_name', 'total_amount','thb_amount']
+    final_df["date"] = pd.to_datetime(final_df["date"]).dt.date
 
     # save ไฟล์ Parquet
     final_df.to_parquet(output_path, index=False)
