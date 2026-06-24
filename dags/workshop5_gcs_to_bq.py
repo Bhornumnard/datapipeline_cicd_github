@@ -1,8 +1,7 @@
-from airflow.models import DAG
-from airflow.decorators import dag, task
+from airflow.sdk import dag, task
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-from airflow.utils.dates import days_ago
+import pendulum
 import pandas as pd
 import requests
 
@@ -80,7 +79,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     print("== End of Workshop 4 ʕ•́ᴥ•̀ʔっ♡ ==")
 
 
-@dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=["workshop"])
+@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1), catchup=False, tags=["workshop"])
 def workshop5():
     """
     # Workshop 5
@@ -96,7 +95,13 @@ def workshop5():
     )
 
     # TODO: สร้าง t4 ที่เป็น GCSToBigQueryOperator เพื่อใช้งานกับ BigQuery แบบ Airflow และใส่ dependencies
+    t4 = GCSToBigQueryOperator(
+        task_id="gcs_to_bq",
+        bucket="gs://asia-southeast3-apache-arif-c62dc290-bucket/data",
+        source_format="PARQUET",
+        destination_project_dataset_table="project-83574f1e-8a28-49d8-9ae:work_shop_r2de.workshop5_gcs_to_bq",
+    )
 
-    [t1, t2] >> t3
+    [t1, t2] >> t3 >> t4
 
 workshop5()

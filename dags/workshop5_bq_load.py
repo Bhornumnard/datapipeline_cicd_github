@@ -100,7 +100,7 @@ def workshop5_bash():
         task_id="bq_load",
         bash_command=(
             f"bq load --source_format=PARQUET "
-            f"'project-83574f1e-8a28-49d8-9ae:work_shop_r2de.workshop4_output_airflow' "
+            f"'project-83574f1e-8a28-49d8-9ae:work_shop_r2de.workshop5_bq_load' "
             f"{final_output_path}"
         ),
     )
