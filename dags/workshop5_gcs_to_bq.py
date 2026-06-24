@@ -19,12 +19,12 @@ default_args = {
 }
 
 WORKSHOP5_BQ_SCHEMA = [
-    {"name": "transaction_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "transaction_id", "type": "STRING", "mode": "NULLABLE"},
     {"name": "date", "type": "DATE", "mode": "NULLABLE"},
-    {"name": "product_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "product_id", "type": "STRING", "mode": "NULLABLE"},
     {"name": "price", "type": "FLOAT", "mode": "NULLABLE"},
     {"name": "quantity", "type": "INTEGER", "mode": "NULLABLE"},
-    {"name": "customer_id", "type": "INTEGER", "mode": "NULLABLE"},
+    {"name": "customer_id", "type": "STRING", "mode": "NULLABLE"},
     {"name": "product_name", "type": "STRING", "mode": "NULLABLE"},
     {"name": "customer_country", "type": "STRING", "mode": "NULLABLE"},
     {"name": "customer_name", "type": "STRING", "mode": "NULLABLE"},
@@ -88,8 +88,10 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     final_df.columns = ['transaction_id', 'date', 'product_id', 'price', 'quantity', 'customer_id',
         'product_name', 'customer_country', 'customer_name', 'total_amount','thb_amount']
     final_df["date"] = pd.to_datetime(final_df["date"]).dt.date
-    for col in ("transaction_id", "product_id", "quantity", "customer_id"):
-        final_df[col] = pd.to_numeric(final_df[col], errors="coerce").round().astype("Int64")
+    for col in ("transaction_id", "product_id", "customer_id"):
+        numeric = pd.to_numeric(final_df[col], errors="coerce").round()
+        final_df[col] = numeric.apply(lambda v: str(int(v)) if pd.notna(v) else None)
+    final_df["quantity"] = pd.to_numeric(final_df["quantity"], errors="coerce").round().astype("Int64")
 
     # save ไฟล์ Parquet
     final_df.to_parquet(output_path, index=False)
