@@ -88,6 +88,8 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     final_df.columns = ['transaction_id', 'date', 'product_id', 'price', 'quantity', 'customer_id',
         'product_name', 'customer_country', 'customer_name', 'total_amount','thb_amount']
     final_df["date"] = pd.to_datetime(final_df["date"]).dt.date
+    for col in ("transaction_id", "product_id", "quantity", "customer_id"):
+        final_df[col] = pd.to_numeric(final_df[col], errors="coerce").round().astype("Int64")
 
     # save ไฟล์ Parquet
     final_df.to_parquet(output_path, index=False)

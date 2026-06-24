@@ -75,6 +75,8 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     final_df.columns = ['transaction_id', 'date', 'product_id', 'price', 'quantity', 'customer_id',
         'product_name', 'customer_country', 'customer_name', 'total_amount','thb_amount']
     final_df["date"] = pd.to_datetime(final_df["date"]).dt.date
+    for col in ("transaction_id", "product_id", "quantity", "customer_id"):
+        final_df[col] = pd.to_numeric(final_df[col], errors="coerce").round().astype("Int64")
 
     # save ไฟล์ Parquet
     final_df.to_parquet(output_path, index=False)
@@ -101,7 +103,7 @@ def workshop5_bash():
     t4 = BashOperator(
         task_id="bq_load",
         bash_command=(
-            f"bq load --source_format=PARQUET "
+            f"bq load --replace --source_format=PARQUET "
             f"'project-83574f1e-8a28-49d8-9ae:work_shop_r2de.workshop5_bq_load' "
             f"{final_output_path}"
         ),
