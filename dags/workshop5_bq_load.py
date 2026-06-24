@@ -1,8 +1,8 @@
-from airflow.models import DAG
-from airflow.decorators import dag, task
-from airflow.operators.bash import BashOperator
+
+from airflow.sdk import dag, task
+from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-from airflow.utils.dates import days_ago
+import pendulum
 import pandas as pd
 import requests
 
@@ -80,7 +80,7 @@ def merge_data(transaction_path, conversion_rate_path, output_path):
     print("== End of Workshop 4 ʕ•́ᴥ•̀ʔっ♡ ==")
 
 
-@dag(default_args=default_args, schedule_interval="@once", start_date=days_ago(1), tags=["workshop"])
+@dag(default_args=default_args, schedule="@once", start_date=pendulum.today("UTC").subtract(days=1), tags=["workshop"])
 def workshop5_bash():
     """
     # Workshop 5
@@ -96,7 +96,12 @@ def workshop5_bash():
     )
 
     # TODO: สร้าง t4 ที่เป็น BashOperator เพื่อใช้งานกับ BigQuery และใส่ dependencies
+    t4 = BashOperator(
+        task_id="bq_load",
+        bash_command="bq load --source_format=PARQUET 'project-83574f1e-8a28-49d8-9ae.work_shop_r2de.workshop4_output_airflow' final_output_path",
+        dag=dag
+    )
 
-    [t1, t2] >> t3
+    [t1, t2] >> t3 >> t4
 
 workshop5_bash()
