@@ -76,4 +76,7 @@ services:
       DAGS_FOLDER: /home/airflow/gcs/dags
       GCP_PROJECT: ${GCP_PROJECT_ID:-local-dev}
       GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID:-local-dev}
+      # GCP connection for GCS/BigQuery DAGs (uses GCP_PROJECT_ID from .env)
       AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: google-cloud-platform://?extra__google_cloud_platform__project=${GCP_PROJECT_ID:-local-dev}&extra__google_cloud_platform__scope=https://www.googleapis.com/auth/cloud-platform
+      # LLM connection for @task.llm (llm_conn_id="google_ai") — password from GOOGLE_AI_API_KEY in .env
+      AIRFLOW_CONN_GOOGLE_AI: '{"conn_type":"pydanticai","password":"${GOOGLE_AI_API_KEY}","extra":{"model":"google:gemini-3.1-flash-lite"}}'
